@@ -8,8 +8,8 @@ from airflow.operators.sensors import BaseSensorOperator
 from airflow.utils import timezone
 
 from unaflow.operators.check_dag_run_operator import CheckDagRunOperator
-from unaflow.sensors.external_dag_run_sensor import ExternalDagRunSensor
 from unaflow.operators.trigger_dag_run_operator import TriggerDagRunUnacastOperator, DagRunOrder
+from unaflow.sensors.external_dag_run_sensor import ExternalDagRunSensor
 
 
 def execution_date_now(*args, **kwargs):
@@ -77,7 +77,9 @@ class AbstractSensorDAG(DAG):
         self.trigger_dag_python_callable = trigger_dag_python_callable
 
         # Create the START sensor task
-        self.sensor = self._create_sensor_with_defaults(mode=mode, timeout=timeout, poke_interval=poke_interval)
+        self.sensor = self._create_sensor_with_defaults(mode=mode,
+                                                        timeout=timeout,
+                                                        poke_interval=poke_interval)
 
         # When all is DONE, we mark this as success
         # This DONE task ensures that the whole DAG is a success,
@@ -136,7 +138,10 @@ class AbstractSensorDAG(DAG):
         return dro
 
     def _create_sensor_with_defaults(self, mode, timeout, poke_interval) -> BaseSensorOperator:
-        sensor = self._create_sensor(task_id="wait_for_event", mode=mode, timeout=timeout, poke_interval=poke_interval)
+        sensor = self._create_sensor(task_id="wait_for_event",
+                                     mode=mode,
+                                     timeout=timeout,
+                                     poke_interval=poke_interval)
         sensor.dag = self
         sensor.wait_for_downstream = True
         sensor.depends_on_past = True  # Need to set this as well as wait_for_downstream
@@ -165,5 +170,3 @@ class BashSensorDAG(AbstractSensorDAG):
                           poke_interval=poke_interval,
                           bash_command=self.bash_command,
                           mode=mode)
-
-

@@ -16,5 +16,8 @@ venv: ## Create a virtual environment folder for Code-completion and tests insid
 	export AIRFLOW_GPL_UNIDECODE="yes"; \
 	pip install -r requirements.txt;
 
+flake8:
+	flake8 src
+
 -include ./brokkr/brokkr.mk
 

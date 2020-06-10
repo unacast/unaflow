@@ -17,10 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
-
-from airflow.exceptions import AirflowException
-from airflow.models import TaskInstance, DagBag, DagModel, DagRun
+from airflow.models import DagRun
 from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
@@ -50,7 +47,7 @@ class ExternalDagRunSensor(BaseSensorOperator):
         self.allowed_states = allowed_states or [State.SUCCESS, State.FAILED]
         if not set(self.allowed_states) <= set(State.dag_states):
             raise ValueError(
-                'Valid values for `allowed_states`: {}'.format(State.dag_states)
+                'Valid values for `allowed_states`: %s ' % State.dag_states
             )
         self.external_run_id = external_run_id
 

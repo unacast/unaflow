@@ -18,13 +18,13 @@
 # under the License.
 
 import datetime
+import json
+
 import six
-from airflow.models import BaseOperator, DagRun
+from airflow.api.common.experimental.trigger_dag import trigger_dag
+from airflow.models import BaseOperator
 from airflow.utils import timezone
 from airflow.utils.decorators import apply_defaults
-from airflow.api.common.experimental.trigger_dag import trigger_dag
-
-import json
 
 
 class DagRunOrder(object):
@@ -72,10 +72,10 @@ class TriggerDagRunUnacastOperator(BaseOperator):
             dro = self.python_callable(context, dro)
         if dro:
             dag_run = trigger_dag(dag_id=self.trigger_dag_id,
-                                          run_id=dro.run_id,
-                                          conf=json.dumps(dro.payload),
-                                          execution_date=self.execution_date,
-                                          replace_microseconds=False)
+                                  run_id=dro.run_id,
+                                  conf=json.dumps(dro.payload),
+                                  execution_date=self.execution_date,
+                                  replace_microseconds=False)
             return dag_run.run_id
         else:
             self.log.info("Criteria not met, moving on")
