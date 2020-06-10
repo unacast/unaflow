@@ -1,7 +1,7 @@
 .SILENT: ;
-BROKKR_PLUGINS = help/help@v0.3.5
 .DEFAULT_GOAL := help
-PACKAGE_VERSION=
+# You can override this if you would like staged files in local testing
+# For example like "make package PACKAGE_GIT_REF=`git stash create`"
 PACKAGE_GIT_REF=HEAD
 VENV_FOLDER ?=.venv
 
@@ -12,8 +12,8 @@ help: ## List all described targets available
 .PHONY: package
 package: ## Make a python package
 	mkdir -p output
-	$(if $(value PACKAGE_VERSION),, $(error PACKAGE_VERSION environment variable is not set.))
-	git archive --format=zip --output=output/unaflow-$(PACKAGE_VERSION).zip $(PACKAGE_GIT_REF):src
+	git archive --format=zip --output=output/unaflow.zip $(PACKAGE_GIT_REF):src
+	echo Archive created at output/unaflow.zip
 
 .PHONY: venv
 venv: ## Create a virtual environment folder for Code-completion and tests inside your IDE
