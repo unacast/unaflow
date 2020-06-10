@@ -4,8 +4,8 @@ from base64 import b64decode
 from airflow.contrib.operators.pubsub_operator import PubSubSubscriptionCreateOperator
 from airflow.contrib.sensors.pubsub_sensor import PubSubPullSensor
 
-from unaflow.mailman.sensor_dag import AbstractSensorDAG
-from unaflow.mailman.trigger_dag_run_operator import DagRunOrder
+from unaflow.dags.sensor_dag import AbstractSensorDAG
+from unaflow.operators.trigger_dag_run_operator import DagRunOrder
 
 
 class PubSubSensorDAG(AbstractSensorDAG):

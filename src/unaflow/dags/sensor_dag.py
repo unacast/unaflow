@@ -7,9 +7,9 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.sensors import BaseSensorOperator
 from airflow.utils import timezone
 
-from unaflow.mailman.check_dag_run_operator import CheckDagRunOperator
-from unaflow.mailman.external_dag_run_sensor import ExternalDagRunSensor
-from unaflow.mailman.trigger_dag_run_operator import TriggerDagRunUnacastOperator, DagRunOrder
+from unaflow.operators.check_dag_run_operator import CheckDagRunOperator
+from unaflow.sensors.external_dag_run_sensor import ExternalDagRunSensor
+from unaflow.operators.trigger_dag_run_operator import TriggerDagRunUnacastOperator, DagRunOrder
 
 
 def execution_date_now(*args, **kwargs):
