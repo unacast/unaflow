@@ -28,8 +28,10 @@ jobs:
       - name: Install python requirements
         run: pip install -r requirements.txt
 
-      - name: create dist
-        run: make package
+      - name: Make package
+        run: |
+          python setup.py sdist bdist_wheel
+          twine check dist/*
 
       - name: Upload to test.pypi.org
         env:

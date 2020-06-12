@@ -6,7 +6,6 @@ VENV_FOLDER ?=.venv
 help: ## List all described targets available
 	awk -F ':|##' '/^[^\t].+:.*##/ { printf "\033[36m%-28s\033[0m -%s\n", $$1, $$NF }' $(MAKEFILE_LIST) | sort
 
-.ONESHELL:
 .PHONY: package
 package: ## Make a python package
 	rm -rf dist

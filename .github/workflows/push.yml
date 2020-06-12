@@ -29,7 +29,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run lint
-        run: make flake8
+        run: flake8 unaflow
 
       - name: Make package
-        run: make package
+        run: |
+          python setup.py sdist bdist_wheel
+          twine check dist/*
