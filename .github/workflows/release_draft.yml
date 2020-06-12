@@ -11,12 +11,29 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Set-up python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Create cache
+        id: cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-python-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
+
+      - name: Install python requirements
+        run: pip install -r requirements.txt
+
       - name: create dist
-        id: create_dist
         run: make package
 
       - name: Upload to test.pypi.org
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
-        run: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+        run: |
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
