@@ -1,8 +1,8 @@
-name: Create release distribution
+name: Release to PyPi
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   upload-dist:
@@ -12,17 +12,12 @@ jobs:
 
       - name: create dist
         id: create_dist
-        run: |
-          make package
-          echo "##[set-output name=path;]$(ls dist/unaflow*.zip)"
-          echo "##[set-output name=basename;]$(basename dist/unaflow*.zip)"
+        run: make package
 
-      - name: Upload
-        uses: actions/upload-release-asset@v1.0.2
+      - name: Upload to pypi.org
+        if:
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ steps.create_dist.outputs.path }}
-          asset_name: ${{ steps.create_dist.outputs.basename }}
-          asset_content_type: application/gzip
+          twine upload  dist/*

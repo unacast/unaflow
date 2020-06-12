@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='unaflow',
-    url='https://github.com/unaflow.git',
+    url='https://github.com/unacast/unaflow',
     author='Unacast',
     author_email='ole.christian.langfjaran@unacast.com',
     description='A collection helper classes for Apache Airflow',
@@ -23,7 +23,6 @@ setup(
     python_requires='>=3',
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Environment :: Console',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
