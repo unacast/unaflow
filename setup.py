@@ -11,7 +11,7 @@ setup(
     name='unaflow',
     url='https://github.com/unaflow.git',
     author='Unacast',
-    author_email='developers+github@unacast.com',
+    author_email='ole.christian.langfjaran@unacast.com',
     description='A collection helper classes for Apache Airflow',
     license='Apache License 2.0',
     packages=find_packages(),
