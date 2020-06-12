@@ -1,12 +1,12 @@
-# Working folder
-output/
+# Python specifics
+dist/
+__pycache__/
+*.egg-info/
+*.pyc
+build/
 
 # Virtualenv
 .venv
-
-# Working folder for Brokkr
-brokkr/plugins/
-.airflow
 
 # IntelliJ. Out with everything
 .idea/
