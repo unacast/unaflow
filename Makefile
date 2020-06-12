@@ -10,9 +10,9 @@ help: ## List all described targets available
 .PHONY: package
 package: ## Make a python package
 	rm -rf dist
-	python setup.py sdist --formats=zip;
+	python setup.py sdist
 	echo ""
-	echo Package created at `ls dist/*.zip`
+	echo Package created at `ls dist/*.tar.gz`
 
 .PHONY: venv
 venv: ## Create a virtual environment folder for Code-completion and tests inside your IDE
