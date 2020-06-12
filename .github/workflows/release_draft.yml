@@ -30,7 +30,7 @@ jobs:
 
       - name: Make package
         run: |
-          python3 setup.py sdist bdist_wheel
+          python setup.py sdist bdist_wheel
           twine check dist/*
 
       - name: Upload to test.pypi.org
