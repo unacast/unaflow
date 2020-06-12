@@ -2,3 +2,5 @@ apache-airflow==1.10.6
 # Testing
 pytest==5.3.5
 flake8==3.7.9
+# Versioning (release)
+versioneer==0.18
