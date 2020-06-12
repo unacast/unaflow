@@ -23,5 +23,5 @@ venv: ## Create a virtual environment folder for Code-completion and tests insid
 
 .PHONY: flake8
 flake8:
-	flake8 src
+	flake8 unaflow
 

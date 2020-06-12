@@ -34,10 +34,11 @@ class CheckDagRunOperator(BaseOperator):
 
         dag_run = DagRun.find(run_id=self.run_id)
         if not dag_run:
-            raise AirflowException("Could not find any dag runs with id '%s'"
+            raise AirflowException("Could not find any dag runs with id '{0}'"
                                    .format(self.run_id))
         elif not dag_run.state <= set(self.allowed_states):
-            raise AirflowException("Could not find any dag runs with id '%s' and state within '%s' but '%s'"
+            raise AirflowException("Could not find any dag runs with id '{0}' "
+                                   "and state within '{1}' but '{2}'"
                                    .format(self.run_id, self.allowed_states, dag_run.state))
         else:
             self.log.info("DAG run with id '%s' checked out ok with state '%s'",
