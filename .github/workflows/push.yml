@@ -30,3 +30,6 @@ jobs:
 
       - name: Run lint
         run: make flake8
+
+      - name: Make package
+        run: make package
