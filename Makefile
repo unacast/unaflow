@@ -9,7 +9,7 @@ help: ## List all described targets available
 .PHONY: package
 package: ## Make a python package
 	rm -rf dist
-	python setup.py sdist bdist_wheel
+	python setup.py sdist --formats=gztar,zip bdist_wheel
 	twine check dist/*
 	echo ""
 	echo Package created at `ls dist/*.tar.gz`
