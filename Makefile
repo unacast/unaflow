@@ -22,6 +22,6 @@ venv: ## Create a virtual environment folder for Code-completion and tests insid
 	pip install -r requirements.txt;
 
 .PHONY: flake8
-flake8:
+flake8: ## Run flake8 lint
 	flake8 unaflow
 
