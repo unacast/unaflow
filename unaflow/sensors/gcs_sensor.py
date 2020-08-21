@@ -48,8 +48,9 @@ class GoogleCloudStoragePrefixSensorUnaflow(BaseSensorOperator):
             google_cloud_storage_conn_id=self.google_cloud_conn_id,
             delegate_to=self.delegate_to)
 
-        files = hook.list(self.bucket, prefix=self.prefix, maxResults=self.max_results)
+        files = hook.list(self.bucket, prefix=self.prefix)
         found = bool(files)
+        self.log.info("Found %s files. Returning %s to xcom" % (len(files), self.max_results))
         if found:
-            context['ti'].xcom_push(key='files', value=files)
+            context['ti'].xcom_push(key='files', value=files[:self.max_results])
         return found

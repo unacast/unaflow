@@ -43,6 +43,7 @@ class GoogleCloudStoragePrefixSensorDAG(AbstractSensorDAG):
                  destination=None,
                  gcp_conn_id='google_cloud_default',
                  delegate_to=None,
+                 max_results=20,
                  *args, **kwargs):
 
         self.gcp_conn_id = gcp_conn_id
@@ -52,6 +53,7 @@ class GoogleCloudStoragePrefixSensorDAG(AbstractSensorDAG):
         self.single_file = single_file
         self.destination_bucket = destination_bucket
         self.destination = destination
+        self.max_results = max_results
         super(GoogleCloudStoragePrefixSensorDAG, self).__init__(*args, **kwargs)
 
         if destination or destination_bucket:
@@ -95,6 +97,7 @@ class GoogleCloudStoragePrefixSensorDAG(AbstractSensorDAG):
             delegate_to=self.delegate_to,
             google_cloud_conn_id=self.gcp_conn_id,
             poke_interval=poke_interval,
+            max_results=self.max_results,
             mode=mode
         )
 
