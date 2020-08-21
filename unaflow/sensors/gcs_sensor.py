@@ -32,10 +32,12 @@ class GoogleCloudStoragePrefixSensorUnaflow(BaseSensorOperator):
                  prefix,
                  google_cloud_conn_id='google_cloud_default',
                  delegate_to=None,
+                 max_results=20,
                  *args, **kwargs):
         super(GoogleCloudStoragePrefixSensorUnaflow, self).__init__(*args, **kwargs)
         self.bucket = bucket
         self.prefix = prefix
+        self.max_results = max_results
         self.google_cloud_conn_id = google_cloud_conn_id
         self.delegate_to = delegate_to
 
@@ -46,7 +48,7 @@ class GoogleCloudStoragePrefixSensorUnaflow(BaseSensorOperator):
             google_cloud_storage_conn_id=self.google_cloud_conn_id,
             delegate_to=self.delegate_to)
 
-        files = hook.list(self.bucket, prefix=self.prefix)
+        files = hook.list(self.bucket, prefix=self.prefix, maxResults=self.max_results)
         found = bool(files)
         if found:
             context['ti'].xcom_push(key='files', value=files)
