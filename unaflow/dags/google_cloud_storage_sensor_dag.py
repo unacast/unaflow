@@ -86,8 +86,8 @@ class GoogleCloudStoragePrefixSensorDAG(AbstractSensorDAG):
 
             if self.trigger_dag_id:
                 self.move_files >> self.trigger_dag
-            else:
-                self.move_files >> self.done
+
+            self.move_files >> self.done
 
     def _create_sensor(self, task_id, mode, timeout, poke_interval):
         return GoogleCloudStoragePrefixSensorUnaflow(
