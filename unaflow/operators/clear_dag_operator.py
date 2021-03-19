@@ -26,7 +26,11 @@ class ClearDagOperator(BaseOperator):
         self.clear_dag()
 
     def clear_dag(self):
-        date = timezone.parse(self.execution_date) if isinstance(self.execution_date, str) else self.execution_date
+        if isinstance(self.execution_date, str):
+            date = timezone.parse(self.execution_date)
+        else:
+            date = self.execution_date
+
         clear_dag: DAG = DagBag().get_dag(self.execution_dag_id)
         clear_dag.clear(
             start_date=date,

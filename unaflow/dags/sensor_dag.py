@@ -21,7 +21,7 @@ def execution_time_now(*args, **kwargs):
 
 
 class AbstractSensorDAG(DAG):
-    '''
+    """
     This is a DAG for triggering other dags, based on a sensor.
 
     :param poke_interval: Time in seconds that the job should wait in
@@ -44,7 +44,7 @@ class AbstractSensorDAG(DAG):
         quite long. The poke interval should be more than one minute to
         prevent too much load on the scheduler.
     :type mode: str
-    '''
+    """
 
     def __init__(
             self,
@@ -54,7 +54,7 @@ class AbstractSensorDAG(DAG):
             timeout: Optional[int] = 60 * 60 * 24 * 7,  # One week
             schedule_interval: timedelta = timedelta(minutes=10),
             trigger_dag_id: Optional[str] = None,
-            trigger_dag_execution_callable: Optional[Callable[[Dict, DagRunOrder], DagRunOrder]] = execution_time_now,
+            trigger_dag_execution_callable: Optional[Callable[[Dict, DagRunOrder], DagRunOrder]] = execution_time_now,  # noqa: E501
             sensor_on_retry_callback: Optional[Callable[[Dict], None]] = None,
             sensor_retries: Optional[int] = None,
             trigger_dag_python_callable=None,

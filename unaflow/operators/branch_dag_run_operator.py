@@ -6,7 +6,6 @@ from pendulum import datetime
 
 
 class BranchDagRunOperator(BaseOperator, SkipMixin):
-
     template_fields = ['execution_dag_id', 'execution_date', ]
 
     """
@@ -33,7 +32,11 @@ class BranchDagRunOperator(BaseOperator, SkipMixin):
         self.skip_all_except(context['ti'], branch)
 
     def check_dagrun_exists(self):
-        date = timezone.parse(self.execution_date) if isinstance(self.execution_date, str) else self.execution_date
+        if isinstance(self.execution_date, str):
+            date = timezone.parse(self.execution_date)
+        else:
+            date = self.execution_date
+
         runs = DagRun.find(
             dag_id=self.execution_dag_id,
             execution_date=date,
