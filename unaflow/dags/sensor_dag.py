@@ -1,15 +1,15 @@
 from datetime import timedelta
+from typing import Callable, Dict, Optional
 
 from airflow import DAG
-from airflow.contrib.sensors.bash_sensor import BashSensor
+from airflow.operators.dagrun_operator import DagRunOrder, TriggerDagRunOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.sensors import BaseSensorOperator
 from airflow.utils import timezone
 
-from unaflow.operators.check_dag_run_operator import CheckDagRunOperator
-from unaflow.operators.trigger_dag_run_operator import TriggerDagRunUnacastOperator, DagRunOrder
-from unaflow.sensors.external_dag_run_sensor import ExternalDagRunSensor
+from unaflow.operators.branch_dag_run_operator import BranchDagRunOperator
+from unaflow.operators.clear_dag_operator import ClearDagOperator
 
 
 def execution_date_now(*args, **kwargs):
@@ -46,20 +46,21 @@ class AbstractSensorDAG(DAG):
     :type mode: str
     '''
 
-    def __init__(self,
-                 dag_id=None,
-                 mode='reschedule',
-                 poke_interval=60 * 5,
-                 timeout=60 * 60 * 24 * 7,  # One week
-                 schedule_interval=timedelta(minutes=10),
-                 trigger_dag_id: str = None,
-                 trigger_dag_wait: bool = False,
-                 trigger_dag_execution_callable=execution_time_now,
-                 sensor_on_retry_callback=None,
-                 sensor_retries=None,
-                 trigger_dag_python_callable=None,
-                 *args,
-                 **kwargs):
+    def __init__(
+            self,
+            dag_id=None,
+            mode: str = 'reschedule',
+            poke_interval: Optional[int] = 60 * 5,
+            timeout: Optional[int] = 60 * 60 * 24 * 7,  # One week
+            schedule_interval: timedelta = timedelta(minutes=10),
+            trigger_dag_id: Optional[str] = None,
+            trigger_dag_execution_callable: Optional[Callable[[Dict, DagRunOrder], DagRunOrder]] = execution_time_now,
+            sensor_on_retry_callback: Optional[Callable[[Dict], None]] = None,
+            sensor_retries: Optional[int] = None,
+            trigger_dag_python_callable=None,
+            clear_dag=False,
+            *args,
+            **kwargs):
         if not dag_id and trigger_dag_id:
             dag_id = "%s_trigger" % trigger_dag_id
         super(AbstractSensorDAG, self).__init__(
@@ -72,14 +73,18 @@ class AbstractSensorDAG(DAG):
         self.poke_interval = poke_interval
         self.timeout = timeout
         self.trigger_dag_id = trigger_dag_id
-        self.sensor_on_retry_callback = sensor_on_retry_callback
-        self.sensor_retries = sensor_retries
         self.trigger_dag_python_callable = trigger_dag_python_callable
+        self.trigger_dag_execution_callable = trigger_dag_execution_callable
+        self.sensor_on_retry_callback = sensor_on_retry_callback
+        self.sensor_retries: int = sensor_retries
+        self.clear_dag = clear_dag
 
         # Create the START sensor task
-        self.sensor = self._create_sensor_with_defaults(mode=mode,
-                                                        timeout=timeout,
-                                                        poke_interval=poke_interval)
+        # Subclasses needs to implement the _create_sensor method
+        # with the appropriate sensor
+        self.sensor = self.__create_sensor_with_defaults(mode=mode,
+                                                         timeout=timeout,
+                                                         poke_interval=poke_interval)
 
         # When all is DONE, we mark this as success
         # This DONE task ensures that the whole DAG is a success,
@@ -88,41 +93,14 @@ class AbstractSensorDAG(DAG):
         self.sensor >> self.done
 
         # If trigger_dag_id is set, we create a task for triggering another DAG
-        # If trigger_dag_wait we also wait for the triggered DAG to finish
         if trigger_dag_id:
-            self.trigger_dag_execution_date = PythonOperator(
-                task_id="evaluate_execution_date",
-                python_callable=trigger_dag_execution_callable,
-                provide_context=True,
-                dag=self
-            )
-
-            self.trigger_dag = TriggerDagRunUnacastOperator(
-                task_id="trigger_%s" % trigger_dag_id,
-                trigger_dag_id=trigger_dag_id,
-                python_callable=self.payload,
-                execution_date='{{ ti.xcom_pull(task_ids="evaluate_execution_date") }}',
-                dag=self
-            )
-            self.sensor >> self.trigger_dag_execution_date >> self.trigger_dag
-
-            # Create a wait for operator if asked for
-            if trigger_dag_wait:
-                self.wait_for_triggered_dag = ExternalDagRunSensor(
-                    task_id="wait_for_triggered_dag",
-                    external_run_id='{{ ti.xcom_pull(task_ids="%s") }}' % self.trigger_dag.task_id,
-                    dag=self
-                )
-                self.check_dag_run_for_success = CheckDagRunOperator(
-                    task_id="check_for_success",
-                    run_id='{{ ti.xcom_pull(task_ids="%s") }}' % self.trigger_dag.task_id,
-                    dag=self
-                )
-                self.trigger_dag >> self.wait_for_triggered_dag >> self.check_dag_run_for_success >> self.done
-            else:
-                self.trigger_dag >> self.done
+            self._create_trigger_dag_tasks()
 
     def payload(self, context, dro: DagRunOrder):
+        """
+        An overridable function that adds information to the trigger.
+        Add extra payload in the dro.payload object if needed.
+        """
         if self.trigger_dag_python_callable:
             dro = self.trigger_dag_python_callable(context, dro)
         else:
@@ -137,7 +115,7 @@ class AbstractSensorDAG(DAG):
 
         return dro
 
-    def _create_sensor_with_defaults(self, mode, timeout, poke_interval) -> BaseSensorOperator:
+    def __create_sensor_with_defaults(self, mode, timeout, poke_interval) -> BaseSensorOperator:
         sensor = self._create_sensor(task_id="wait_for_event",
                                      mode=mode,
                                      timeout=timeout,
@@ -155,18 +133,41 @@ class AbstractSensorDAG(DAG):
     def _create_sensor(self, task_id, mode, timeout, poke_interval) -> BaseSensorOperator:
         raise NotImplementedError("Need to implement sensor class in subclass")
 
+    def _create_trigger_dag_tasks(self):
+        # Get the timestamp to trigger. Either it is default, now,
+        # or supplied from the callable trigger_dag_execution_callable
+        self.trigger_dag_execution_date = PythonOperator(
+            task_id="evaluate_execution_date",
+            python_callable=self.trigger_dag_execution_callable,
+            provide_context=True,
+            dag=self
+        )
 
-class BashSensorDAG(AbstractSensorDAG):
-    def __init__(self,
-                 bash_command,
-                 *args,
-                 **kwargs):
-        self.bash_command = bash_command
-        super(BashSensorDAG, self).__init__(*args, **kwargs)
+        self.trigger_dag = TriggerDagRunOperator(
+            task_id="trigger_%s" % self.trigger_dag_id,
+            trigger_dag_id=self.trigger_dag_id,
+            python_callable=self.payload,
+            execution_date='{{ ti.xcom_pull(task_ids="evaluate_execution_date") }}',
+            dag=self
+        )
+        if self.clear_dag:
+            self.clear_dag_task = ClearDagOperator(
+                task_id="clear_dag",
+                execution_dag_id=self.trigger_dag_id,
+                execution_date='{{ ti.xcom_pull(task_ids="evaluate_execution_date") }}',
+                dag=self
+            )
 
-    def _create_sensor(self, task_id, mode, timeout, poke_interval):
-        return BashSensor(task_id=task_id,
-                          timeout=timeout,
-                          poke_interval=poke_interval,
-                          bash_command=self.bash_command,
-                          mode=mode)
+            self.check_if_retrigger_task = BranchDagRunOperator(
+                task_id="check_if_retrigger",
+                execution_dag_id=self.trigger_dag_id,
+                execution_date='{{ ti.xcom_pull(task_ids="evaluate_execution_date") }}',
+                branch_false=self.trigger_dag.task_id,
+                branch_true=self.clear_dag_task.task_id,
+                dag=self
+            )
+
+            self.sensor >> self.trigger_dag_execution_date >> self.check_if_retrigger_task
+            self.check_if_retrigger_task >> [self.trigger_dag, self.clear_dag_task]
+        else:
+            self.sensor >> self.trigger_dag_execution_date >> self.trigger_dag

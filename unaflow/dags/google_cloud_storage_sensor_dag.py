@@ -80,11 +80,14 @@ class GoogleCloudStoragePrefixSensorDAG(AbstractSensorDAG):
                 delegate_to=self.delegate_to
             )
             if self.single_file:
+                # Choose only the top file
                 self.sensor >> self.top_file >> self.move_files
             else:
                 self.sensor >> self.move_files
 
-            if self.trigger_dag_id:
+            if self.trigger_dag_id and self.clear_dag:
+                self.move_files >> self.check_if_retrigger_task
+            elif self.trigger_dag_id:
                 self.move_files >> self.trigger_dag
 
             self.move_files >> self.done

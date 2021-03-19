@@ -1,16 +1,16 @@
 import re
 from datetime import datetime
-from airflow.utils import timezone
 
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
+from airflow.utils import timezone
 
 from unaflow.dags.google_cloud_storage_sensor_dag import GoogleCloudStoragePrefixSensorDAG
 
 # A simple "Hello world" DAG
 with DAG(
         dag_id="example_dag",
-        schedule_interval=None,  # Important this be None
+        schedule_interval=None,  # Important this be None. Or else, the trigger is not responsible.
         start_date=datetime(2021, 1, 1)
 ) as hello_world:
     echo = BashOperator(
@@ -45,5 +45,6 @@ sensor_dag = GoogleCloudStoragePrefixSensorDAG(
     prefix="file_",
     destination="in-progress",
     trigger_dag_execution_callable=execution_date_from_filename,
-    start_date=hello_world.start_date
+    start_date=hello_world.start_date,
+    clear_dag=True,
 )
