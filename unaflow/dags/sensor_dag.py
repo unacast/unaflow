@@ -48,12 +48,12 @@ class AbstractSensorDAG(DAG):
 
     def __init__(
             self,
+            trigger_dag_id: str,
             dag_id=None,
             mode: str = 'reschedule',
             poke_interval: Optional[int] = 60 * 5,
             timeout: Optional[int] = 60 * 60 * 24 * 7,  # One week
-            schedule_interval: timedelta = timedelta(minutes=10),
-            trigger_dag_id: Optional[str] = None,
+            schedule_interval: timedelta = timedelta(minutes=10),            
             trigger_dag_execution_callable: Optional[Callable[[Dict, DagRunOrder], DagRunOrder]] = execution_time_now,  # noqa: E501
             sensor_on_retry_callback: Optional[Callable[[Dict], None]] = None,
             sensor_retries: Optional[int] = None,
