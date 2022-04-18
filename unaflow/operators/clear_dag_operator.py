@@ -2,7 +2,8 @@ from typing import Union
 
 from airflow import DAG
 from airflow.models import BaseOperator, DagBag
-from airflow.utils import timezone, apply_defaults
+from airflow.utils import timezone
+from airflow.utils.decorators import apply_defaults
 from pendulum import datetime
 
 

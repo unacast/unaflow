@@ -25,3 +25,15 @@ venv: ## Create a virtual environment folder for Code-completion and tests insid
 flake8: ## Run flake8 lint
 	flake8 unaflow
 
+.PHONY: run
+run: ## Run examples locally
+	mkdir -p /tmp/temp-python-path/
+	mkdir -p /tmp/temp-airflow-unaflow/
+	rm -rf /tmp/temp-python-path/unaflow
+	touch /tmp/temp-python-path/__init__.py
+	ln -s ${PWD}/unaflow /tmp/temp-python-path/unaflow
+	source .venv/bin/activate && AIRFLOW_HOME=/tmp/temp-airflow-unaflow/ \
+		AIRFLOW__CORE__DAGS_FOLDER=${PWD}/example/dags \
+		AIRFLOW__CORE__LOAD_EXAMPLES=false \
+		PYTHONPATH=/tmp/temp-python-path/ \
+		airflow standalone
