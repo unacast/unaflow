@@ -23,7 +23,7 @@ venv: ## Create a virtual environment folder for Code-completion and tests insid
 
 .PHONY: flake8
 flake8: ## Run flake8 lint
-	flake8 unaflow
+	source .venv/bin/activate && flake8 unaflow
 
 .PHONY: run
 run: ## Run examples locally
