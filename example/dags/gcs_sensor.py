@@ -10,7 +10,6 @@ by evaluating the suffix of the file that arrived.
 from datetime import datetime
 
 from airflow import DAG
-from airflow.models import TaskInstance
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python import PythonOperator
 from unaflow.dags.trigger_dag.providers.google.gcs_context_functions import evaluate_execution_date_on_file_suffix
