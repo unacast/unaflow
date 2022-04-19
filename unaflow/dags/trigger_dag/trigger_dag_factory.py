@@ -1,4 +1,3 @@
-from airflow.models.base import Label
 from airflow import DAG
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python_operator import PythonOperator
