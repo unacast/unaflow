@@ -7,13 +7,13 @@ Once a file has arrived, it derives the execution date, for the DAG to trigger,
 by evaluating the suffix of the file that arrived.
 """
 
-import re
 from datetime import datetime
 
 from airflow import DAG
+from airflow.models import TaskInstance
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.utils import timezone
+from unaflow.dags.trigger_dag.providers.google.gcs_context_functions import evaluate_execution_date_on_file_suffix
 
 from unaflow.dags.trigger_dag.trigger_dag_factory import trigger_dag_factory
 from unaflow.dags.trigger_dag.providers.google.gcs_trigger_dag_configuration import GcsMovefilesTriggerDagConfigurationSingle
@@ -29,28 +29,20 @@ with DAG(
         python_callable=lambda **kwargs: print(kwargs['dag_run'].conf)
     )
 
+
 class GcsTriggerOnFilename(GcsMovefilesTriggerDagConfigurationSingle):
     def execution_date(*args, **kwargs):
-        """
-        We utilise the super-class' find_first_file and get the filename.
-        From that filename, we derive the executiondate based on the suffix
-        of the filename         
-        """
+        return evaluate_execution_date_on_file_suffix(kwargs['ti'])
 
-        filename = GcsMovefilesTriggerDagConfigurationSingle.find_first_file(**kwargs)
-        pattern = re.compile('.*_([0-9]{8})')
-        match = pattern.match(filename)
-        return str(timezone.parse(match.group(1), timezone=timezone.utc))
-    
     def create_downstream_triggering(self):
         return BashOperator(
             task_id="the_end",
             bash_command="echo the end"
         )
-    
+
     # Override the task for finding the top file,
     # and add another task. This could for example
-    # be a task that adds some metadata to the 
+    # be a task that adds some metadata to the
     # folder that is being moved around.
     def create_find_top_file_task(self):
         top_file = super().create_find_top_file_task()
@@ -62,7 +54,7 @@ class GcsTriggerOnFilename(GcsMovefilesTriggerDagConfigurationSingle):
         top_file >> meta_data
 
         return [top_file, meta_data]
-    
+
     # Add a task that sends a slack message
     # after the sensor has succesfully received a message
     def create_downstream_sensor(self):

@@ -73,7 +73,7 @@ class TriggerDagConfiguration(ABC):
                               'trigger_dag_task_url': '{{ task_instance.log_url }}',
                               }
 
-    def execution_date(**context):
+    def execution_date(*args, **kwargs):
         """
         Override this method to return the appropriate execution date
          for the DAG to trigger.

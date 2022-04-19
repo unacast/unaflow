@@ -1,3 +1,4 @@
+from unaflow.dags.trigger_dag.providers.google.gcs_context_functions import find_first_file
 from unaflow.dags.trigger_dag.trigger_dag_configuration import SENSOR_TASK_ID, TriggerDagConfiguration
 from unaflow.operators.gcs_copy import GoogleCloudStorageCopyOperator
 
@@ -6,7 +7,6 @@ from airflow.sensors.base import BaseSensorOperator
 from typing import Sequence, Union
 from airflow.models.taskmixin import TaskMixin
 from airflow.utils.task_group import TaskGroup
-from airflow.models import TaskInstance
 from airflow.operators.python_operator import PythonOperator
 
 
@@ -90,20 +90,6 @@ class GcsMovefilesTriggerDagConfigurationSingle(GcsMovefilesTriggerDagConfigurat
         self.configuration = {**self.configuration,
                               'filename': f"{{{{ ti.xcom_pull(task_ids='{self.TASK_ID_MOVE_FILE_FULL}') }}}}"}
 
-    @staticmethod
-    def find_first_file(**context):
-        """
-        Finds the first result in the sorted xcom result of the sensor task.
-        """
-        # We grab "this", meaning the task_instance
-        task_instance: TaskInstance = context['ti']
-        # Get the files that triggered the sensor
-        file_list = task_instance.xcom_pull(task_ids=SENSOR_TASK_ID)
-        # Sort the files. Just to make some sense of out things
-        sorted_file_list = sorted(file_list)
-        # Return the top file to the xcom_of this task_instance
-        return sorted_file_list[0]
-
     def create_downstream_sensor(self) -> Union[TaskMixin, Sequence[TaskMixin]]:
         with TaskGroup(group_id="move_file") as tg:
             top_file = self.create_find_top_file_task()
@@ -125,7 +111,7 @@ class GcsMovefilesTriggerDagConfigurationSingle(GcsMovefilesTriggerDagConfigurat
     def create_find_top_file_task(self):
         return PythonOperator(
             task_id=self.TASK_ID_TOP_FILE,
-            python_callable=self.find_first_file,
+            python_callable=find_first_file,
             provide_context=True
         )
 
