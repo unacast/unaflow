@@ -15,7 +15,7 @@ from airflow.operators.python import PythonOperator
 from unaflow.dags.trigger_dag.providers.google.gcs_context_functions import evaluate_execution_date_on_file_suffix
 
 from unaflow.dags.trigger_dag.trigger_dag_factory import trigger_dag_factory
-from unaflow.dags.trigger_dag.providers.google.gcs_trigger_dag_configuration import GcsMovefilesTriggerDagConfigurationSingle
+from unaflow.dags.trigger_dag.providers.google.gcs_trigger_dag_configuration import GcsMovefilesTriggerDagConfiguration
 
 # A simple "Hello world" DAG
 with DAG(
@@ -29,7 +29,7 @@ with DAG(
     )
 
 
-class GcsTriggerOnFilename(GcsMovefilesTriggerDagConfigurationSingle):
+class GcsTriggerOnFilename(GcsMovefilesTriggerDagConfiguration):
     def execution_date(*args, **kwargs):
         return evaluate_execution_date_on_file_suffix(kwargs['ti'])
 
@@ -38,21 +38,6 @@ class GcsTriggerOnFilename(GcsMovefilesTriggerDagConfigurationSingle):
             task_id="the_end",
             bash_command="echo the end"
         )
-
-    # Override the task for finding the top file,
-    # and add another task. This could for example
-    # be a task that adds some metadata to the
-    # folder that is being moved around.
-    def create_find_top_file_task(self):
-        top_file = super().create_find_top_file_task()
-        meta_data = BashOperator(
-            task_id="meta_data",
-            bash_command=f"echo creating meta data for {top_file.task_id}"
-        )
-
-        top_file >> meta_data
-
-        return [top_file, meta_data]
 
     # Add a task that sends a slack message
     # after the sensor has succesfully received a message
@@ -73,6 +58,7 @@ dag = trigger_dag_factory(
         prefix="file_",
         destination="in-progress",
         clear_dag=True,
+        single_file=True,
     ),
     start_date=hello_world.start_date,
 )
