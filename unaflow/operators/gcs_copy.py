@@ -1,7 +1,7 @@
 import ast
 from os.path import basename
 
-from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
@@ -70,7 +70,7 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
 
     def execute(self, context):
 
-        hook = GoogleCloudStorageHook(
+        hook = GCSHook(
             google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
             delegate_to=self.delegate_to
         )
