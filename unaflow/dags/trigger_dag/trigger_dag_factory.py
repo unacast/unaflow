@@ -1,3 +1,4 @@
+from airflow.models.base import Label
 from airflow import DAG
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python_operator import PythonOperator
@@ -92,6 +93,6 @@ def trigger_dag_factory(config: TriggerDagConfiguration, **dag_kwargs):
         # Set downstreams to the triggering, if given.
         triggering_downstreams = config.create_downstream_triggering()
         if triggering_downstreams:
-            trigger_dag.set_downstream(triggering_downstreams)
+            tg.set_downstream(triggering_downstreams)
 
     return dag
