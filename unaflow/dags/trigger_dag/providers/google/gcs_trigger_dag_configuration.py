@@ -58,8 +58,10 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
         self.single_file = single_file
         if self.single_file:
             self._source_objects = [XCOM_TOP_FILE]
+            self.configuration = {**self.configuration, 'filename': XCOM_TOP_FILE}
         else:
             self._source_objects = f"{{{{ ti.xcom_pull(task_ids='{SENSOR_TASK_ID}') }}}}"
+            self.configuration = {**self.configuration, 'filenames': f"{{{{ ti.xcom_pull(task_ids='{SENSOR_TASK_ID}') }}}}"}
 
     def create_sensor(self) -> BaseSensorOperator:
         return GCSObjectsWithPrefixExistenceSensor(
