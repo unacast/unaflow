@@ -58,11 +58,8 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
         self.single_file = single_file
         if self.single_file:
             self._source_objects = [XCOM_TOP_FILE]
-            self.configuration = {**self.configuration, 'filename': XCOM_TOP_FILE}
         else:
             self._source_objects = f"{{{{ ti.xcom_pull(task_ids='{SENSOR_TASK_ID}') }}}}"
-            self.configuration = {**self.configuration,
-                                  'filenames': f"{{{{ ti.xcom_pull(task_ids='{SENSOR_TASK_ID}') }}}}"}
 
     def create_sensor(self) -> BaseSensorOperator:
         return GCSObjectsWithPrefixExistenceSensor(
@@ -76,7 +73,7 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
         )
 
     def create_downstream_sensor(self) -> Union[TaskMixin, Sequence[TaskMixin]]:
-        return GoogleCloudStorageCopyOperator(
+        move_files = GoogleCloudStorageCopyOperator(
             task_id="move_files",
             source_bucket=self.bucket,
             source_objects=self._source_objects,
@@ -86,6 +83,16 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
             google_cloud_storage_conn_id=self.gcp_conn_id,
             delegate_to=self.delegate_to
         )
+
+        # Add filename(s) to the dag_conf
+        if self.single_file:
+            self.configuration = {**self.configuration,
+                                  'filename': "{{ ti.xcom_pull(task_ids='move_files')[0] }}"}
+        else:
+            self.configuration = {**self.configuration,
+                                  'filenames': "{{ ti.xcom_pull(task_ids='move_files') }}"}
+
+        return move_files
 
     def default_doc_md(self):
         return f"""# Triggering DAG for {self.trigger_dag_id}
