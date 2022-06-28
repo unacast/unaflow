@@ -52,7 +52,7 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
                  destination_bucket=None,
                  destination_object=None,
                  move_object=False,
-                 google_cloud_storage_conn_id='google_cloud_default',
+                 gcp_conn_id='google_cloud_default',
                  delegate_to=None,
                  last_modified_time=None,
                  *args,
@@ -64,14 +64,14 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
         self.move_object = move_object
         self.destination_bucket = destination_bucket
         self.destination_object = destination_object
-        self.google_cloud_storage_conn_id = google_cloud_storage_conn_id
+        self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.last_modified_time = last_modified_time
 
     def execute(self, context):
 
         hook = GCSHook(
-            google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
+            gcp_conn_id=self.gcp_conn_id,
             delegate_to=self.delegate_to
         )
 
