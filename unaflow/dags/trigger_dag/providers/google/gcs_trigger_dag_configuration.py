@@ -42,7 +42,7 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
                  prefix: str = None,
                  destination_bucket=None,
                  destination=None,
-                 gcp_conn_id='google_cloud_default',
+                 gcp_conn_id=None,
                  delegate_to=None,
                  single_file=True,
                  *args, **kwargs
@@ -84,7 +84,7 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
             destination_bucket=self.destination_bucket,
             destination_object=self.destination,
             move_object=True,
-            google_cloud_storage_conn_id=self.gcp_conn_id,
+            gcp_conn_id=self.gcp_conn_id,
             delegate_to=self.delegate_to
         )
 
