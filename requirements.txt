@@ -1,5 +1,5 @@
 apache-airflow==2.2.5
-apache-airflow-providers-google==6.7.0
+apache-airflow-providers-google==8.10.0
 # Testing
 pytest==5.3.5
 flake8==4.0.1
