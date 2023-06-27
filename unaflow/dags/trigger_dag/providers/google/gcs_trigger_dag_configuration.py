@@ -29,10 +29,6 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
     :param google_cloud_conn_id: The connection ID to use when
         connecting to Google cloud storage.
     :type google_cloud_conn_id: str
-    :param delegate_to: The account to impersonate, if any.
-        For this to work, the service account making the request must have
-        domain-wide delegation enabled.
-    :type delegate_to: str
     :param destination_bucket:
     :param destination:
     """
@@ -43,7 +39,6 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
                  destination_bucket=None,
                  destination=None,
                  gcp_conn_id=None,
-                 delegate_to=None,
                  single_file=True,
                  *args, **kwargs
                  ) -> None:
@@ -53,7 +48,6 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
         self.destination_bucket = destination_bucket or bucket
         self.destination = destination
         self.gcp_conn_id = gcp_conn_id
-        self.delegate_to = delegate_to
         self.configuration = {**self.configuration, 'bucket': self.destination_bucket}
         self.single_file = single_file
         if self.single_file:
@@ -70,7 +64,6 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
             task_id=SENSOR_TASK_ID,
             bucket=self.bucket,
             prefix=self.prefix,
-            delegate_to=self.delegate_to,
             google_cloud_conn_id=self.gcp_conn_id,
             poke_interval=self.poke_interval,
             mode=self.mode
@@ -85,7 +78,6 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
             destination_object=self.destination,
             move_object=True,
             gcp_conn_id=self.gcp_conn_id,
-            delegate_to=self.delegate_to
         )
 
     def default_doc_md(self):
