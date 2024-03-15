@@ -66,7 +66,8 @@ class GcsMovefilesTriggerDagConfiguration(TriggerDagConfiguration):
             prefix=self.prefix,
             google_cloud_conn_id=self.gcp_conn_id,
             poke_interval=self.poke_interval,
-            mode=self.mode
+            mode=self.mode,
+            timeout=self.timeout,
         )
 
     def create_downstream_sensor(self) -> Union[TaskMixin, Sequence[TaskMixin]]:
