@@ -3,7 +3,13 @@ from datetime import timedelta
 from typing import Dict, Optional, Sequence, Union
 
 from airflow.models.taskmixin import TaskMixin
-from airflow.models.baseoperator import TaskStateChangeCallback
+
+try:
+    from airflow.models.abstractoperator import TaskStateChangeCallback
+except ImportError:
+    # For Airflow versions < 2.7.0
+    from airflow.models.baseoperator import TaskStateChangeCallback
+
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils import timezone
 

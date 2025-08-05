@@ -1,7 +1,7 @@
-apache-airflow==2.2.5
-apache-airflow-providers-google==6.7.0
+apache-airflow==2.10.5
+apache-airflow-providers-google==15.1.0
 # Testing
-pytest==5.3.5
+pytest==8.3.5
 flake8==4.0.1
 # Versioning and release
 versioneer==0.18
