@@ -1,9 +1,8 @@
-apache-airflow==2.10.5
-apache-airflow-providers-google==15.1.0
+#apache-airflow
+apache-airflow-providers-google
 # Testing
-pytest==8.3.5
-flake8==4.0.1
+flake8
 # Versioning and release
-versioneer==0.18
-twine==5.0.0
-wheel==0.34.2
+versioneer
+twine
+wheel
