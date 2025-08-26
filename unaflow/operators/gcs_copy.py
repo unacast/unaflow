@@ -30,10 +30,7 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
     :param google_cloud_storage_conn_id: The connection ID to use when
         connecting to Google cloud storage.
     :type google_cloud_storage_conn_id: str
-    :param delegate_to: The account to impersonate, if any.
-        For this to work, the service account making the request must have
-        domain-wide delegation enabled.
-    :type delegate_to: str
+
     :param last_modified_time: When specified, the objects will be copied or moved,
         only if they were modified after last_modified_time.
         If tzinfo has not been set, UTC will be assumed.
@@ -53,7 +50,6 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
                  destination_object=None,
                  move_object=False,
                  gcp_conn_id='google_cloud_default',
-                 delegate_to=None,
                  last_modified_time=None,
                  *args,
                  **kwargs):
@@ -65,14 +61,12 @@ class GoogleCloudStorageCopyOperator(BaseOperator):
         self.destination_bucket = destination_bucket
         self.destination_object = destination_object
         self.gcp_conn_id = gcp_conn_id
-        self.delegate_to = delegate_to
         self.last_modified_time = last_modified_time
 
     def execute(self, context):
 
         hook = GCSHook(
-            gcp_conn_id=self.gcp_conn_id,
-            delegate_to=self.delegate_to
+            gcp_conn_id=self.gcp_conn_id
         )
 
         if self.destination_bucket is None:
